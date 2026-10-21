@@ -7,7 +7,7 @@ let package = Package(
   targets: [
     .target(name: "HUDCore", path: "Sources/HUDCore"),
     .executableTarget(name: "ClaudeHUD", dependencies: ["HUDCore"], path: "Sources/ClaudeHUD"),
-    .testTarget(name: "ClaudeHUDTests", dependencies: ["HUDCore"])
+    .testTarget(name: "ClaudeHUDTests", dependencies: ["HUDCore"], resources: [.copy("Fixtures")])
   ],
   swiftLanguageVersions: [.v5]
 )
