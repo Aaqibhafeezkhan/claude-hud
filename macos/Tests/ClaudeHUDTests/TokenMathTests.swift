@@ -52,18 +52,18 @@ final class TokenMathTests: XCTestCase {
   }
 
   func testNonAssistantOrMalformedLinesAreIgnored() {
-    XCTAssertNil(TokenMath.parse(line: #"{\"type\":\"user\"}"#, inputPrice: 3, outputPrice: 15, cacheReadPrice: 0.3))
+    XCTAssertNil(TokenMath.parse(line: #"{ "type":"user" }"#, inputPrice: 3, outputPrice: 15, cacheReadPrice: 0.3))
     XCTAssertNil(TokenMath.parse(line: "{broken", inputPrice: 3, outputPrice: 15, cacheReadPrice: 0.3))
   }
 
   func testTruncatedFinalLineIsNotConsumedUntilNewlineArrives() {
-    let partial = Data(#"{\"type\":\"assistant\"}"#.utf8)
+    let partial = Data(#"{"type":"assistant"}"#.utf8)
     let firstRead = TokenMath.completeLines(in: partial)
     XCTAssertTrue(firstRead.lines.isEmpty)
     XCTAssertEqual(firstRead.consumedBytes, 0)
 
     let completed = TokenMath.completeLines(in: partial + Data([10]))
-    XCTAssertEqual(completed.lines, [#"{\"type\":\"assistant\"}"#])
+    XCTAssertEqual(completed.lines, [partial])
     XCTAssertEqual(completed.consumedBytes, partial.count + 1)
   }
 }
