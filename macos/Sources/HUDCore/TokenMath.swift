@@ -68,10 +68,10 @@ public enum TokenMath {
     )
   }
 
-  public static func completeLines(in data: Data) -> (lines: [String], consumedBytes: Int) {
+  public static func completeLines(in data: Data) -> (lines: [Data], consumedBytes: Int) {
     guard let lastNewline = data.lastIndex(of: 10) else { return ([], 0) }
     let completeData = data[..<lastNewline]
-    let lines = completeData.split(separator: 10).map { String(decoding: $0, as: UTF8.self) }
+    let lines = completeData.split(separator: 10).map { Data($0) }
     return (lines, data.distance(from: data.startIndex, to: lastNewline) + 1)
   }
 }
