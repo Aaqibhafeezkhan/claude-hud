@@ -43,8 +43,8 @@ final class TokenCounter {
     offsets[path] = off + UInt64(complete.consumedBytes)
     var u = usage[path] ?? Usage()
     var m = msgs[path] ?? [:]
-    for line in complete.lines where line.range(of: "\"assistant\"") != nil {
-      guard let j = try? JSONSerialization.jsonObject(with: Data(line.utf8)) as? [String: Any],
+    for line in complete.lines where line.range(of: marker) != nil {
+      guard let j = try? JSONSerialization.jsonObject(with: line) as? [String: Any],
             j["type"] as? String == "assistant", let msg = j["message"] as? [String: Any] else { continue }
       if let parts = msg["content"] as? [[String: Any]],
          let text = parts.last(where: { $0["type"] as? String == "text" })?["text"] as? String {
