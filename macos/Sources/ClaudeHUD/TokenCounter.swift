@@ -37,11 +37,13 @@ final class TokenCounter {
     if size < off { off = 0; msgs[path] = [:] }
     guard size > off else { return }
     try? h.seek(toOffset: off)
-    guard let data = try? h.readToEnd(), let nl = data.lastIndex(of: 10) else { return }
-    offsets[path] = off + UInt64(nl - data.startIndex + 1)
+    guard let data = try? h.readToEnd() else { return }
+    let complete = TokenMath.completeLines(in: data)
+    guard complete.consumedBytes > 0 else { return }
+    offsets[path] = off + UInt64(complete.consumedBytes)
     var u = usage[path] ?? Usage()
     var m = msgs[path] ?? [:]
-    for line in data[..<nl].split(separator: 10) where line.range(of: marker) != nil {
+    for line in complete.lines where line.range(of: marker) != nil {
       guard let j = try? JSONSerialization.jsonObject(with: line) as? [String: Any],
             j["type"] as? String == "assistant", let msg = j["message"] as? [String: Any] else { continue }
       if let parts = msg["content"] as? [[String: Any]],
@@ -49,18 +51,18 @@ final class TokenCounter {
         u.lastText = text.trimmingCharacters(in: .whitespacesAndNewlines)
       }
       guard let us = msg["usage"] as? [String: Any], let id = msg["id"] as? String else { continue }
-      let n = { (k: String) in us[k] as? Int ?? 0 }
-      u.context = n("input_tokens") + n("cache_creation_input_tokens") + n("cache_read_input_tokens")
       let isToday = (j["timestamp"] as? String).flatMap(iso.date(from:)).map { $0 >= day } ?? true
-      let cw = n("cache_creation_input_tokens")
-      let cw1h = min(cw, (us["cache_creation"] as? [String: Any])?["ephemeral_1h_input_tokens"] as? Int ?? 0)
       let pr = price(msg["model"] as? String ?? "")
-      let cost = (Double(n("input_tokens")) * pr.i + Double(n("output_tokens")) * pr.o + Double(cw - cw1h) * pr.i * 1.25
-        + Double(cw1h) * pr.i * 2 + Double(n("cache_read_input_tokens")) * pr.r) / 1e6
-      // Most of the context written again = the cache had expired, so the whole history was paid at full price.
-      if m[id] == nil, isToday, cw >= 50_000, cw * 2 > u.context { u.recache += cw }
+      let metrics = TokenMath.parse(
+        usage: us,
+        inputPrice: pr.i,
+        outputPrice: pr.o,
+        cacheReadPrice: pr.r
+      )
+      u.context = metrics.contextTokens
+      if m[id] == nil, isToday { u.recache += metrics.recacheTokens }
       if let model = msg["model"] as? String, !model.hasPrefix("<") { u.model = model }
-      m[id] = (n("input_tokens") + cw + n("output_tokens"), isToday, cost)
+      m[id] = (metrics.totalTokens, isToday, metrics.cost)
     }
     u.tokens = m.values.reduce(0) { $0 + $1.n }
     u.today = m.values.reduce(0) { $0 + ($1.today ? $1.n : 0) }
@@ -70,4 +72,3 @@ final class TokenCounter {
     usage[path] = u
   }
 }
-

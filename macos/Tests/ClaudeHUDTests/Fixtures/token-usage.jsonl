@@ -1,0 +1,5 @@
+{"type":"assistant","timestamp":"2026-10-13T10:00:00.000Z","message":{"id":"normal","model":"claude-sonnet","usage":{"input_tokens":100,"output_tokens":20,"cache_creation_input_tokens":40,"cache_read_input_tokens":0}}}
+{"type":"assistant","timestamp":"2026-10-13T10:01:00.000Z","message":{"id":"cache-5m","model":"claude-sonnet","usage":{"input_tokens":0,"output_tokens":0,"cache_creation_input_tokens":100,"cache_read_input_tokens":0}}}
+{"type":"assistant","timestamp":"2026-10-13T10:02:00.000Z","message":{"id":"cache-1h","model":"claude-sonnet","usage":{"input_tokens":0,"output_tokens":0,"cache_creation_input_tokens":100,"cache_read_input_tokens":0,"cache_creation":{"ephemeral_1h_input_tokens":100}}}}
+{"type":"assistant","timestamp":"2026-10-13T10:03:00.000Z","message":{"id":"cache-read","model":"claude-sonnet","usage":{"input_tokens":0,"output_tokens":0,"cache_creation_input_tokens":0,"cache_read_input_tokens":500}}}
+{"type":"assistant","timestamp":"2026-10-13T10:04:00.000Z","message":{"id":"expired","model":"claude-sonnet","usage":{"input_tokens":100,"output_tokens":0,"cache_creation_input_tokens":60000,"cache_read_input_tokens":100}}}
